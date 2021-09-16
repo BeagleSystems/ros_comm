@@ -50,6 +50,7 @@
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <std_srvs/SetBool.h>
+#include <rosgraph_msgs/Clock.h>
 
 #include "rosbag/bag.h"
 
@@ -82,6 +83,7 @@ struct ROSBAG_DECL PlayerOptions
     bool     start_paused;
     bool     at_once;
     bool     bag_time;
+    bool     sync_time;
     double   bag_time_frequency;
     double   time_scale;
     int      queue_size;
@@ -179,6 +181,8 @@ private:
     void setupTerminal();
     void restoreTerminal();
 
+    void updateClock(const rosgraph_msgs::Clock::ConstPtr& msg);
+
     void updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event);
 
     void advertise(const ConnectionInfo* c);
@@ -212,6 +216,9 @@ private:
     bool pause_change_requested_;
 
     bool requested_pause_state_;
+
+    ros::Subscriber time_sub_;
+    ros::Time last_clock_;
 
     ros::Subscriber rate_control_sub_;
     ros::Time last_rate_control_;

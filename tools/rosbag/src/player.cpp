@@ -80,6 +80,7 @@ PlayerOptions::PlayerOptions() :
     start_paused(false),
     at_once(false),
     bag_time(false),
+    sync_time(false),
     bag_time_frequency(0.0),
     time_scale(1.0),
     queue_size(0),
@@ -192,6 +193,10 @@ void Player::publish() {
       std::cerr << "No messages to play on specified topics.  Exiting." << std::endl;
       ros::shutdown();
       return;
+    }
+
+    if (options_.sync_time) {
+    	time_sub_ = node_handle_.subscribe("/clock", 1000, &Player::updateClock, this);
     }
 
     // Advertise all of our messages
@@ -334,6 +339,11 @@ void Player::publish() {
     }
 
     ros::shutdown();
+}
+
+void Player::updateClock(const rosgraph_msgs::Clock::ConstPtr& msg)
+{
+    last_clock_ = msg->clock;
 }
 
 void Player::updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event)
@@ -510,6 +520,11 @@ void Player::doPublish(MessageInstance const& m) {
       (pub_iter->second).publish(m);
       printTime();
       return;
+    }
+
+    ROS_INFO_STREAM("sync time: " << options_.sync_time << " sec: " << (time - last_clock_).toSec());
+    if (options_.sync_time && (time - last_clock_).toSec() > 0.0) {
+        (time - last_clock_).sleep();
     }
 
     if (pause_for_topics_)

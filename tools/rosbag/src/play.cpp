@@ -50,6 +50,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("pause", "start in paused mode")
       ("queue", po::value<int>()->default_value(100), "use an outgoing queue of size SIZE")
       ("clock", "publish the clock time")
+      ("sync-clock", "synchronize the clock time")
       ("hz", po::value<float>()->default_value(100.0f), "use a frequency of HZ when publishing clock time")
       ("delay,d", po::value<float>()->default_value(0.2f), "sleep SEC seconds after every advertise call (to allow subscribers to connect)")
       ("rate,r", po::value<float>()->default_value(1.0f), "multiply the publish rate by FACTOR")
@@ -102,6 +103,8 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       opts.bag_time_frequency = vm["hz"].as<float>();
     if (vm.count("clock"))
       opts.bag_time = true;
+    if (vm.count("sync-clock"))
+      opts.sync_time = true;
     if (vm.count("delay"))
       opts.advertise_sleep = ros::WallDuration(vm["delay"].as<float>());
     if (vm.count("rate"))
